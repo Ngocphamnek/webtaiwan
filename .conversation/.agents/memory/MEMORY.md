@@ -1,0 +1,2 @@
+- [External media in preview](external-media-preview.md) — Remote image CDNs can fail in the app preview; prefer bundled media.
+- [Hành trình imagery](hanh-trinh-imagery.md) — Keep the plane isolated and use images that match each section, especially coding imagery for IT.

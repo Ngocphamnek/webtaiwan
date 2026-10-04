@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Hành trình đến Đài Loan"
+description = "Trang kể chuyện cá nhân về hành trình trưởng thành và chuyến bay đến Đài Loan."
+version = "1.0.0"
+id = "artifacts/hanh-trinh-dai-loan"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19144
+
+[services.development]
+run = "pnpm --filter @workspace/hanh-trinh-dai-loan run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/hanh-trinh-dai-loan", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/hanh-trinh-dai-loan/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19144"
+BASE_PATH = "/"
