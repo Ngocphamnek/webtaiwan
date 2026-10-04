@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import aircraftCutout from './assets/aircraft-cutout.png';
+import backgroundMusic from './assets/background-music.mp3';
 import programmingStudy from './assets/programming-study.jpg';
 import tamsuiRiverside from './assets/tamsui-riverside.jpg';
 import haruPortrait from './assets/haru-portrait.png';
@@ -73,7 +74,7 @@ function App() {
   });
   const [musicOn, setMusicOn] = useState(false);
   const [activeSection, setActiveSection] = useState('loi-mo-dau');
-  const audioRef = useRef<{ context: AudioContext; nodes: OscillatorNode[]; gain: GainNode } | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [hasFlightSequence, setHasFlightSequence] = useState(false);
   const [titleFracturing, setTitleFracturing] = useState(false);
   const flightTimersRef = useRef<number[]>([]);
@@ -191,41 +192,61 @@ function App() {
     };
   }, []);
 
-  useEffect(() => () => {
+  useEffect(() => {
     const audio = audioRef.current;
-    if (audio) {
-      audio.nodes.forEach((node) => node.stop());
-      void audio.context.close();
-    }
+    if (!audio) return;
+
+    audio.volume = 0.32;
+    const syncMusicState = () => setMusicOn(!audio.paused && !audio.ended);
+    const playBackgroundMusic = async () => {
+      try {
+        await audio.play();
+      } catch {
+        syncMusicState();
+      }
+    };
+    const removeGestureListeners = () => {
+      window.removeEventListener('pointerdown', startAfterGesture);
+      window.removeEventListener('keydown', startAfterGesture);
+      window.removeEventListener('touchstart', startAfterGesture);
+    };
+    const startAfterGesture = (event: Event) => {
+      removeGestureListeners();
+      if (event.target instanceof Element && event.target.closest('[data-music-control]')) return;
+      void playBackgroundMusic();
+    };
+
+    audio.addEventListener('play', syncMusicState);
+    audio.addEventListener('pause', syncMusicState);
+    audio.addEventListener('ended', syncMusicState);
+    audio.addEventListener('error', syncMusicState);
+    window.addEventListener('pointerdown', startAfterGesture);
+    window.addEventListener('keydown', startAfterGesture);
+    window.addEventListener('touchstart', startAfterGesture, { passive: true });
+    void playBackgroundMusic();
+
+    return () => {
+      removeGestureListeners();
+      audio.removeEventListener('play', syncMusicState);
+      audio.removeEventListener('pause', syncMusicState);
+      audio.removeEventListener('ended', syncMusicState);
+      audio.removeEventListener('error', syncMusicState);
+      audio.pause();
+    };
   }, []);
 
   const toggleMusic = async () => {
-    if (!audioRef.current) {
-      const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!AudioContextClass) return;
-      const context = new AudioContextClass();
-      const gain = context.createGain();
-      gain.gain.value = 0;
-      gain.connect(context.destination);
-      const nodes = [110, 164.81, 220].map((frequency, index) => {
-        const oscillator = context.createOscillator();
-        const voice = context.createGain();
-        oscillator.type = index === 1 ? 'triangle' : 'sine';
-        oscillator.frequency.value = frequency;
-        voice.gain.value = index === 0 ? 0.42 : 0.12;
-        oscillator.connect(voice);
-        voice.connect(gain);
-        oscillator.start();
-        return oscillator;
-      });
-      audioRef.current = { context, nodes, gain };
-    }
     const audio = audioRef.current;
     if (!audio) return;
-    if (audio.context.state === 'suspended') await audio.context.resume();
-    const nextOn = !musicOn;
-    audio.gain.gain.setTargetAtTime(nextOn ? 0.09 : 0, audio.context.currentTime, 0.65);
-    setMusicOn(nextOn);
+    if (audio.paused) {
+      try {
+        await audio.play();
+      } catch {
+        setMusicOn(false);
+      }
+    } else {
+      audio.pause();
+    }
   };
 
   const time = remainingTime(now);
@@ -242,6 +263,7 @@ function App() {
 
   return (
     <main className="story-app">
+      <audio ref={audioRef} className="hidden" src={backgroundMusic} loop preload="auto" aria-hidden="true" />
       <div className="reading-progress" aria-hidden="true"><span /></div>
       <header className="story-header fixed top-0 z-30 flex w-full items-center justify-between px-5 py-5 text-white md:px-12 md:py-7">
         <button className="flex items-center gap-3 border-0 bg-transparent p-0 text-left text-white" onClick={() => scrollTo('loi-mo-dau')} aria-label="Về đầu câu chuyện">
@@ -254,6 +276,7 @@ function App() {
           <button
             className="flex min-h-11 items-center gap-3 rounded-full border border-white/35 bg-[#172634]/25 px-4 text-[11px] tracking-wide text-white backdrop-blur-md transition-colors hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f0c8a3]"
             onClick={toggleMusic}
+            data-music-control
             aria-pressed={musicOn}
             aria-label={musicOn ? 'Tạm dừng nhạc nền' : 'Phát nhạc nền'}
           >

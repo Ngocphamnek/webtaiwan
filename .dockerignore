@@ -4,6 +4,7 @@
 .local
 .agents
 .conversation
+attached_assets/
 node_modules
 **/node_modules
 **/dist

@@ -23,6 +23,7 @@ const contentTypes = {
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".map": "application/json; charset=utf-8",
+  ".mp3": "audio/mpeg",
   ".png": "image/png",
   ".svg": "image/svg+xml",
   ".webp": "image/webp",
@@ -75,13 +76,59 @@ const server = createServer(async (request, response) => {
   try {
     const body = await readFile(filePath);
     const isIndex = filePath === indexFile;
-    response.writeHead(200, {
+    const headers = {
+      "Accept-Ranges": "bytes",
       "Cache-Control": isIndex ? "no-cache" : "public, max-age=3600",
       "Content-Type":
         contentTypes[extname(filePath).toLowerCase()] ??
         "application/octet-stream",
       "X-Content-Type-Options": "nosniff",
-    });
+    };
+    const rangeHeader = request.headers.range;
+
+    if (rangeHeader) {
+      const range = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader.trim());
+      let start;
+      let end;
+
+      if (range && range[1] === "" && range[2] !== "") {
+        const suffixLength = Number(range[2]);
+        start = Math.max(body.length - suffixLength, 0);
+        end = body.length - 1;
+      } else if (range && range[1] !== "") {
+        start = Number(range[1]);
+        end = range[2] === "" ? body.length - 1 : Number(range[2]);
+      }
+
+      if (
+        start === undefined ||
+        end === undefined ||
+        !Number.isSafeInteger(start) ||
+        !Number.isSafeInteger(end) ||
+        start < 0 ||
+        start >= body.length ||
+        end < start
+      ) {
+        response.writeHead(416, {
+          "Accept-Ranges": "bytes",
+          "Content-Range": `bytes */${body.length}`,
+        });
+        response.end();
+        return;
+      }
+
+      end = Math.min(end, body.length - 1);
+      const partialBody = body.subarray(start, end + 1);
+      response.writeHead(206, {
+        ...headers,
+        "Content-Length": String(partialBody.length),
+        "Content-Range": `bytes ${start}-${end}/${body.length}`,
+      });
+      response.end(request.method === "HEAD" ? undefined : partialBody);
+      return;
+    }
+
+    response.writeHead(200, { ...headers, "Content-Length": String(body.length) });
     response.end(request.method === "HEAD" ? undefined : body);
   } catch {
     response.writeHead(500);
