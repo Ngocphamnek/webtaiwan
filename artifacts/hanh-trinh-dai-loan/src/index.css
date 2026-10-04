@@ -156,16 +156,10 @@ button { font: inherit; }
   .motion-reveal,.motion-reveal.is-visible { opacity: 1 !important; filter: none !important; transform: none !important; }
   .threshold-plane { animation: none !important; opacity: .88 !important; }
   .kinetic-char { opacity:1 !important; filter:none !important; transform:none !important; }
-  .hero-aircraft { animation:none !important; opacity:.94 !important; transform:none !important; }
   .hero-title.is-fracturing .kinetic-char { animation:none !important; opacity:1 !important; filter:none !important; transform:none !important; }
 }
 
 .hero { isolation:isolate; overflow:hidden; background:radial-gradient(ellipse at 78% 68%,rgba(190,122,82,.23),transparent 34%),radial-gradient(ellipse at 47% 12%,rgba(74,119,119,.18),transparent 38%),linear-gradient(128deg,#12252e 0%,#1c333b 60%,#263b40 100%); }
-.hero-aircraft {
-  position:absolute; z-index:1; right:5%; bottom:7%; width:clamp(220px,30vw,420px); height:auto;
-  object-fit:contain; opacity:.96; pointer-events:none; transform:rotate(-5deg);
-  filter:brightness(2.9) saturate(.62) drop-shadow(0 0 22px rgba(241,188,143,.58));
-}
 .hero-shade {
   position: absolute; inset: 0;
   background: linear-gradient(90deg, rgba(18,31,40,.82) 0%, rgba(18,31,40,.62) 38%, rgba(18,31,40,.12) 78%), linear-gradient(0deg, rgba(15,28,36,.65) 0%, transparent 57%, rgba(14,25,33,.28) 100%);
@@ -366,7 +360,6 @@ button { font: inherit; }
 @media (max-width: 767px) {
   .hero { min-height:760px; min-height:88svh; }
   .hero-shade { background:linear-gradient(0deg,rgba(18,31,40,.88) 0%,rgba(18,31,40,.53) 55%,rgba(18,31,40,.15) 100%),linear-gradient(90deg,rgba(18,31,40,.35),transparent); }
-  .hero-aircraft { right:4%; bottom:6%; width:min(44vw,190px); }
   .hero h1 { font-size:clamp(3.4rem,16vw,5.2rem); }
   .hero-coordinate { display:none; }
   .hero-side-note { display:none; }

@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: hanh-trinh-dai-loan
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /

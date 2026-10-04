@@ -278,7 +278,6 @@ function App() {
 
       <section id="loi-mo-dau" className="hero relative flex min-h-[780px] items-end scroll-mt-0 md:min-h-[900px]">
         <div className="hero-shade" />
-        <img className="hero-aircraft" src={aircraftCutout} alt="" aria-hidden="true" />
         <div className="hero-coordinate eyebrow absolute right-6 top-28 hidden text-white/65 md:block">10°49′ N &nbsp; 106°39′ E<br />VIỆT NAM · TRƯỚC GIỜ ĐI</div>
         <div className="relative z-10 mx-auto w-full max-w-[1440px] px-6 pb-24 pt-40 text-[#f3efe7] md:px-[11.5%] md:pb-32">
           <p className="eyebrow reveal mb-8 text-[#f2c49a]">Việt Nam → Tamsui · Đài Loan</p>
